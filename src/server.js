@@ -4,25 +4,24 @@
 import { CommandHandlers } from './commandHandlers.js';
 import { registerCommands } from './register.js';
 
-// Verify Discord request signature
-async function verifySignature(request, env) {
-  const signature = request.headers.get('x-signature-ed25519');
-  const timestamp = request.headers.get('x-signature-timestamp');
-  const body = await request.text();
-
-  // Discord provides the public key as a hex-encoded string.
-  // Convert the hex string into a Uint8Array of bytes.
+/**
+ * Verify Discord request signature.
+ *
+ * We accept the signature, timestamp and raw body here so the request
+ * body only needs to be read once in the fetch handler.  The Discord
+ * public key is provided as a hex string; we convert it to bytes.
+ */
+async function verifySignature(signature, timestamp, body, env) {
+  // Convert hex‑encoded public key into a Uint8Array
   const keyData = new Uint8Array(
-    env.DISCORD_PUBLIC_KEY
-      .match(/.{1,2}/g)
-      .map((byte) => parseInt(byte, 16))
+    env.DISCORD_PUBLIC_KEY.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
   );
 
   // Encode the timestamp and body into bytes
   const encoder = new TextEncoder();
   const message = encoder.encode(timestamp + body);
 
-  // Import the key into Web Crypto API
+  // Import the public key into the Web Crypto API
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
     keyData,
@@ -31,23 +30,18 @@ async function verifySignature(request, env) {
     ['verify']
   );
 
-  // Convert the hex signature header into bytes
+  // Convert the hex signature into bytes
   const signatureData = new Uint8Array(
     signature.match(/.{1,2}/g).map((byte) => parseInt(byte, 16))
   );
 
-  // Verify the signature
-  const isValid = await crypto.subtle.verify(
-    'NODE-ED25519',
-    cryptoKey,
-    signatureData,
-    message
-  );
-
-  return isValid;
+  // Verify the Ed25519 signature
+  return crypto.subtle.verify('NODE-ED25519', cryptoKey, signatureData, message);
 }
 
-// Handle Discord interactions
+/**
+ * Execute the appropriate command handler based on the slash command name.
+ */
 async function handleInteraction(interaction, env) {
   const commandHandlers = new CommandHandlers(env);
 
@@ -81,10 +75,9 @@ async function handleInteraction(interaction, env) {
   }
 }
 
-// Main request handler
 export default {
   async fetch(request, env, ctx) {
-    // Handle CORS preflight requests
+    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -101,23 +94,30 @@ export default {
     }
 
     try {
-      // Verify the request is from Discord
-      const isValid = await verifySignature(request, env);
+      // Extract signature headers
+      const signature = request.headers.get('x-signature-ed25519');
+      const timestamp = request.headers.get('x-signature-timestamp');
+
+      // Read the body ONCE
+      const body = await request.text();
+
+      // Verify the signature
+      const isValid = await verifySignature(signature, timestamp, body, env);
       if (!isValid) {
-        return new Response('Invalid signature', { status: 401 });
+     	 return new Response('Invalid signature', { status: 401 });
       }
 
-      // Parse the interaction
-      const interaction = await request.json();
+      // Parse the interaction from the already-read body
+      const interaction = JSON.parse(body);
 
-      // Handle ping (Discord health check)
+      // Respond to Discord's health check (PING)
       if (interaction.type === 1) {
         return new Response(JSON.stringify({ type: 1 }), {
           headers: { 'Content-Type': 'application/json' }
         });
       }
 
-      // Handle slash commands
+      // Respond to slash commands
       if (interaction.type === 2) {
         const response = await handleInteraction(interaction, env);
         return new Response(JSON.stringify(response), {
@@ -125,9 +125,8 @@ export default {
         });
       }
 
-      // Handle other interaction types (buttons, select menus, etc.)
+      // Respond to other interaction types (buttons, selects, etc.)
       if (interaction.type === 3) {
-        // For now, return a simple response
         return new Response(
           JSON.stringify({
             type: 4,
@@ -149,10 +148,9 @@ export default {
     }
   },
 
-  // Scheduled function for reminders (optional)
+  // Optional scheduled handler for reminders
   async scheduled(event, env, ctx) {
-    // This can be used for scheduled reminders
-    // For now, we'll leave it empty
     console.log('Scheduled function called');
+    // Implement scheduled tasks here if desired
   }
 };

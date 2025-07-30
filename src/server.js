@@ -77,15 +77,9 @@ async function handleInteraction(interaction, env) {
 
 export default {
   async fetch(request, env, ctx) {
-    // Handle CORS preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type'
-        }
-      });
+    // Respond to a GET request (e.g., visiting the worker URL in a browser)
+    if (request.method === 'GET') {
+      return new Response('Sobri‑Bot worker is up!', { status: 200 });
     }
 
     // Only handle POST requests

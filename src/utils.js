@@ -7,17 +7,32 @@ export class PermissionManager {
   constructor() {}
 
   hasAdminPermissions(interaction) {
-    // Check if user has administrator permissions
-    return interaction.member?.permissions?.has('Administrator') || false;
+    // Discord raw interactions provide permissions as a string bitfield.
+    const perms = interaction.member?.permissions;
+    if (!perms) return false;
+
+    try {
+      // Administrator bit is 0x0000000000000008 (decimal 8)
+      const ADMIN_BIT = BigInt(8);
+      const permsBig = BigInt(perms);
+      return (permsBig & ADMIN_BIT) === ADMIN_BIT;
+    } catch {
+      // Fallback to Discord.js-like objects
+      if (typeof perms.has === 'function') {
+        return perms.has('Administrator');
+      }
+      return false;
+    }
   }
 
   async sendPermissionError(interaction) {
     return {
       type: 4,
       data: {
-        content: "❌ You don't have permission to use this command. Administrator permissions required.",
-        flags: 64 // Ephemeral
-      }
+        content:
+          "❌ You don't have permission to use this command. Administrator permissions required.",
+        flags: 64, // Ephemeral message
+      },
     };
   }
 }
@@ -27,12 +42,15 @@ export class DateParser {
     try {
       const parsedDate = parseDate(input, new Date(), { forwardDate: true });
       if (!parsedDate) {
-        return { success: false, error: 'Could not parse the given date/time.' };
+        return {
+          success: false,
+          error: 'Could not parse the given date/time.',
+        };
       }
-      return { 
-        success: true, 
+      return {
+        success: true,
         timestamp: Math.floor(parsedDate.getTime() / 1000),
-        date: parsedDate
+        date: parsedDate,
       };
     } catch (error) {
       return { success: false, error: 'Invalid date/time format.' };
@@ -43,16 +61,16 @@ export class DateParser {
 export class EmbedBuilder {
   static createEventEmbed(eventData) {
     const { title, category, timestamp, description, opponent } = eventData;
-    
+
     // Determine embed color and label based on category
-    const colorMap = { 
-      public: 0x1abc9c, 
-      guild: 0x3498db, 
+    const colorMap = {
+      public: 0x1abc9c,
+      guild: 0x3498db,
       both: 0x9b59b6,
-      guildwars: 0xe74c3c
+      guildwars: 0xe74c3c,
     };
-    const embedColor = colorMap[category] || 0x00AE86;
-    
+    const embedColor = colorMap[category] || 0x00ae86;
+
     let label;
     if (category === 'guildwars') {
       label = 'Guild Wars';
@@ -72,10 +90,10 @@ export class EmbedBuilder {
       fields: [
         {
           name: '',
-          value: `📅 <t:${timestamp}:F> - ⏰ <t:${timestamp}:R>`,
-          inline: false
-        }
-      ]
+          value: ` <t:${timestamp}:F> - ⏰ <t:${timestamp}:R>`,
+          inline: false,
+        },
+      ],
     };
 
     if (description) {
@@ -86,16 +104,16 @@ export class EmbedBuilder {
       embed.fields.push({
         name: '⚔️ Opponent',
         value: opponent,
-        inline: true
+        inline: true,
       });
     }
 
     // Add RSVP fields for VFS events
     if (['public', 'guild', 'both'].includes(category)) {
       embed.fields.push(
-        { name: '🛡️ Tank (0)', value: '\u200B', inline: true },
+        { name: '️ Tank (0)', value: '\u200B', inline: true },
         { name: '⚔️ DPS (0)', value: '\u200B', inline: true },
-        { name: '💖 Support (0)', value: '\u200B', inline: true }
+        { name: ' Support (0)', value: '\u200B', inline: true },
       );
     }
 
@@ -104,17 +122,22 @@ export class EmbedBuilder {
 
   static createEventsListEmbed(events, eventType) {
     const embed = {
-      color: eventType === 'vfs' ? 0x00AE86 : eventType === 'gvg' ? 0xFF0000 : 0x5865F2,
-      fields: []
+      color:
+        eventType === 'vfs'
+          ? 0x00ae86
+          : eventType === 'gvg'
+          ? 0xff0000
+          : 0x5865f2,
+      fields: [],
     };
 
     // Set title based on filter type
     if (eventType === 'vfs') {
-      embed.title = '🏯 Upcoming VFS Events 🏯';
+      embed.title = 'Upcoming VFS Events';
     } else if (eventType === 'gvg') {
       embed.title = '⚔️ Upcoming GvG Events ⚔️';
     } else {
-      embed.title = '⚔️ All Upcoming Events 🏯';
+      embed.title = '⚔️ All Upcoming Events';
     }
 
     // Group events by date
@@ -131,26 +154,29 @@ export class EmbedBuilder {
     // Add fields for each date
     for (const [dateKey, dayEvents] of Object.entries(eventsByDate)) {
       const date = new Date(dateKey);
-      const formattedDate = date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
 
       let eventsList = '';
       for (const { eventId, event } of dayEvents) {
-        const time = new Date(event.timestamp * 1000).toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: '2-digit' 
-        });
+        const time = new Date(event.timestamp * 1000).toLocaleTimeString(
+          'en-US',
+          {
+            hour: 'numeric',
+            minute: '2-digit',
+          },
+        );
         eventsList += `• **${event.title}** - ${time} (ID: \`${eventId}\`)\n`;
       }
 
       embed.fields.push({
-        name: `📅 ${formattedDate}`,
+        name: ` ${formattedDate}`,
         value: eventsList,
-        inline: false
+        inline: false,
       });
     }
 
@@ -159,26 +185,26 @@ export class EmbedBuilder {
 
   static createStatusEmbed() {
     return {
-      title: '🟢 Sobri-Bot Status',
-      color: 0x00FF00,
+      title: 'Sobri-Bot Status',
+      color: 0x00ff00,
       fields: [
         {
           name: 'Status',
-          value: '🟢 Online 24/7',
-          inline: true
+          value: 'Online 24/7',
+          inline: true,
         },
         {
           name: 'Platform',
           value: 'Cloudflare Workers',
-          inline: true
+          inline: true,
         },
         {
           name: 'Uptime',
           value: 'Always Available',
-          inline: true
-        }
+          inline: true,
+        },
       ],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
@@ -189,4 +215,4 @@ export function generateEventId() {
 
 export function formatTimestamp(timestamp) {
   return `<t:${timestamp}:F> (<t:${timestamp}:R>)`;
-} 
+}

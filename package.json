@@ -10,15 +10,20 @@
     "register": "node src/register.js",
     "delete-commands": "node scripts/delete-commands.js"
   },
-  "keywords": ["discord", "bot", "cloudflare", "workers"],
+  "keywords": [
+    "discord",
+    "bot",
+    "cloudflare",
+    "workers"
+  ],
   "author": "",
   "license": "ISC",
   "description": "Sobri-Bot - Discord event management bot running on Cloudflare Workers",
   "dependencies": {
-    "chrono-node": "^2.8.3"
+    "chrono-node": "^2.8.3",
+    "discord-interactions": "^4.3.0"
   },
   "devDependencies": {
     "wrangler": "^4.26.1"
   }
-  
 }

@@ -1,7 +1,19 @@
 name = "sobri-bot"
-main = "worker.js"
+main = "src/server.js"
 compatibility_date = "2024-05-01"
 compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace for bot data
+[[kv_namespaces]]
+binding = "SOBRI_BOT_KV"
+id = "71439fb64190452fa83f23ddb6c8585c"
+preview_id = "3599afa66bb44869aaf748a8b22231f5"
+
+# Environment variables
+[vars]
+# These will be set via wrangler secret put
+
+# Observability
 [observability.logs]
 enabled = true
 

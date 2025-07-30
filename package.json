@@ -1,33 +1,24 @@
 {
   "name": "sobri-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "ngrok": "ngrok http 3000",
-    "ngrok-wrangler": "ngrok http 8787",
-    "dev": "node index.js",
-    "deploy": "npx wrangler deploy",
-    "deploy-commands": "node deploy-commands.js"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "register": "node src/register.js",
+    "delete-commands": "node scripts/delete-commands.js"
   },
-  "keywords": [],
+  "keywords": ["discord", "bot", "cloudflare", "workers"],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Sobri-Bot - Discord event management bot running on Cloudflare Workers",
   "dependencies": {
-    "cheerio": "^1.1.2",
-    "chokidar": "^4.0.3",
-    "chrono-node": "^2.8.3",
-    "discord.js": "^14.21.0",
-    "dotenv": "^17.2.1",
-    "ngrok": "^5.0.0-beta.2",
-    "node-fetch": "^2.7.0",
-    "puppeteer": "^24.15.0",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "chrono-node": "^2.8.3"
   },
   "devDependencies": {
     "wrangler": "^4.26.1"
   }
+  
 }

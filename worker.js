@@ -120,12 +120,25 @@ export default {
     // Handle Discord webhook verification
     if (request.method === 'POST' && url.pathname === '/discord') {
       try {
+        // Check if request has content
+        const contentType = request.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          return new Response('Invalid content type', { status: 400 });
+        }
+
         const body = await request.json();
         
         // Handle Discord interaction
         if (body.type === 1) { // PING
+          console.log('Received Discord PING');
           return new Response(JSON.stringify({ type: 1 }), {
-            headers: { 'Content-Type': 'application/json' }
+            status: 200,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type'
+            }
           });
         }
         
@@ -137,7 +150,13 @@ export default {
             try {
               const response = await command.execute(body);
               return new Response(JSON.stringify(response), {
-                headers: { 'Content-Type': 'application/json' }
+                status: 200,
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Headers': 'Content-Type'
+                }
               });
             } catch (error) {
               console.error(`Error executing command ${commandName}:`, error);
@@ -148,7 +167,13 @@ export default {
                   flags: 64
                 }
               }), {
-                headers: { 'Content-Type': 'application/json' }
+                status: 200,
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Headers': 'Content-Type'
+                }
               });
             }
           } else {
@@ -159,7 +184,13 @@ export default {
                 flags: 64
               }
             }), {
-              headers: { 'Content-Type': 'application/json' }
+              status: 200,
+              headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+              }
             });
           }
         }
@@ -173,7 +204,13 @@ export default {
             try {
               const response = await command.autocomplete(body);
               return new Response(JSON.stringify(response), {
-                headers: { 'Content-Type': 'application/json' }
+                status: 200,
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Headers': 'Content-Type'
+                }
               });
             } catch (error) {
               console.error(`Error in autocomplete for ${commandName}:`, error);
@@ -183,7 +220,13 @@ export default {
                   choices: []
                 }
               }), {
-                headers: { 'Content-Type': 'application/json' }
+                status: 200,
+                headers: { 
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Access-Control-Allow-Headers': 'Content-Type'
+                }
               });
             }
           }
@@ -194,15 +237,41 @@ export default {
               choices: []
             }
           }), {
-            headers: { 'Content-Type': 'application/json' }
+            status: 200,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type'
+            }
           });
         }
         
-        return new Response('OK', { status: 200 });
+        return new Response('OK', { 
+          status: 200,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          }
+        });
       } catch (error) {
         console.error('Error processing Discord interaction:', error);
         return new Response('Error processing request', { status: 500 });
       }
+    }
+    
+    // Handle OPTIONS requests for CORS
+    if (request.method === 'OPTIONS' && url.pathname === '/discord') {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      });
     }
     
     // Health check endpoint

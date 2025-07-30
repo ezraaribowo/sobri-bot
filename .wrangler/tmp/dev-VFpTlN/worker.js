@@ -60,7 +60,79 @@ var commands = {
       return {
         type: 4,
         data: {
-          content: "\u{1F7E2} Bot is running on Cloudflare Workers!",
+          content: "\u{1F7E2} Bot is running on Cloudflare Workers! Status: Online 24/7",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  gvg: {
+    description: "GvG event management",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u2694\uFE0F GvG functionality - This would integrate with your GvG system",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  myevents: {
+    description: "View your events",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u{1F4CB} Your events - This would show your personal events",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  setrole: {
+    description: "Set role permissions",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u{1F451} Role management - This would handle role permissions",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  vfs: {
+    description: "VFS functionality",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u{1F3AE} VFS functionality - This would handle VFS-related features",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  delete: {
+    description: "Delete events or data",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u{1F5D1}\uFE0F Delete functionality - This would handle deletions",
+          flags: 64
+        }
+      };
+    }, "execute")
+  },
+  testrole: {
+    description: "Test role permissions",
+    execute: /* @__PURE__ */ __name(async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "\u{1F9EA} Role testing - This would test role permissions",
           flags: 64
         }
       };
@@ -152,6 +224,7 @@ var worker_default = {
         status: "OK",
         timestamp: (/* @__PURE__ */ new Date()).toISOString(),
         environment: "Cloudflare Workers",
+        uptime: "24/7",
         commands: Object.keys(commands)
       }), {
         headers: { "Content-Type": "application/json" }
@@ -160,12 +233,14 @@ var worker_default = {
     if (url.pathname === "/") {
       return new Response(JSON.stringify({
         message: "Sobri-Bot Discord Bot",
-        status: "Running on Cloudflare Workers",
+        status: "Running on Cloudflare Workers - 24/7",
+        uptime: "Always Online",
         endpoints: {
           discord: "/discord",
           health: "/health"
         },
-        commands: Object.keys(commands)
+        commands: Object.keys(commands),
+        deployment: "Cloudflare Workers"
       }), {
         headers: { "Content-Type": "application/json" }
       });

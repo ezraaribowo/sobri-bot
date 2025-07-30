@@ -33,7 +33,79 @@ const commands = {
       return {
         type: 4,
         data: {
-          content: "🟢 Bot is running on Cloudflare Workers!",
+          content: "🟢 Bot is running on Cloudflare Workers! Status: Online 24/7",
+          flags: 64
+        }
+      };
+    }
+  },
+  gvg: {
+    description: 'GvG event management',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "⚔️ GvG functionality - This would integrate with your GvG system",
+          flags: 64
+        }
+      };
+    }
+  },
+  myevents: {
+    description: 'View your events',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "📋 Your events - This would show your personal events",
+          flags: 64
+        }
+      };
+    }
+  },
+  setrole: {
+    description: 'Set role permissions',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "👑 Role management - This would handle role permissions",
+          flags: 64
+        }
+      };
+    }
+  },
+  vfs: {
+    description: 'VFS functionality',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "🎮 VFS functionality - This would handle VFS-related features",
+          flags: 64
+        }
+      };
+    }
+  },
+  delete: {
+    description: 'Delete events or data',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "🗑️ Delete functionality - This would handle deletions",
+          flags: 64
+        }
+      };
+    }
+  },
+  testrole: {
+    description: 'Test role permissions',
+    execute: async (interaction) => {
+      return {
+        type: 4,
+        data: {
+          content: "🧪 Role testing - This would test role permissions",
           flags: 64
         }
       };
@@ -139,6 +211,7 @@ export default {
         status: 'OK',
         timestamp: new Date().toISOString(),
         environment: 'Cloudflare Workers',
+        uptime: '24/7',
         commands: Object.keys(commands)
       }), {
         headers: { 'Content-Type': 'application/json' }
@@ -149,12 +222,14 @@ export default {
     if (url.pathname === '/') {
       return new Response(JSON.stringify({
         message: 'Sobri-Bot Discord Bot',
-        status: 'Running on Cloudflare Workers',
+        status: 'Running on Cloudflare Workers - 24/7',
+        uptime: 'Always Online',
         endpoints: {
           discord: '/discord',
           health: '/health'
         },
-        commands: Object.keys(commands)
+        commands: Object.keys(commands),
+        deployment: 'Cloudflare Workers'
       }), {
         headers: { 'Content-Type': 'application/json' }
       });

@@ -117,8 +117,8 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
-    // Handle Discord webhook verification
-    if (request.method === 'POST' && url.pathname === '/discord') {
+    // Handle Discord webhook verification at root path
+    if (request.method === 'POST' && (url.pathname === '/' || url.pathname === '/discord')) {
       try {
         // Check if request has content
         const contentType = request.headers.get('content-type');
@@ -263,7 +263,7 @@ export default {
     }
     
     // Handle OPTIONS requests for CORS
-    if (request.method === 'OPTIONS' && url.pathname === '/discord') {
+    if (request.method === 'OPTIONS' && (url.pathname === '/' || url.pathname === '/discord')) {
       return new Response(null, {
         status: 200,
         headers: {
@@ -287,14 +287,14 @@ export default {
       });
     }
     
-    // Root endpoint with info
-    if (url.pathname === '/') {
+    // Root endpoint with info (only for GET requests)
+    if (url.pathname === '/' && request.method === 'GET') {
       return new Response(JSON.stringify({
         message: 'Sobri-Bot Discord Bot',
         status: 'Running on Cloudflare Workers - 24/7',
         uptime: 'Always Online',
         endpoints: {
-          discord: '/discord',
+          discord: '/',
           health: '/health'
         },
         commands: Object.keys(commands),
